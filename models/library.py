@@ -53,6 +53,20 @@ class Library(BaseModel):
                 self.documents[document_id].chunks.append(chunk.id)
             self.chunks[chunk.id] = chunk
             self.indexer.add(chunk.id, chunk.embedding)
+
+    def add_chunks(self, chunks: list[Chunk]):
+        document_ids = {chunk.metadata.document_id for chunk in chunks}
+        for document_id in document_ids:
+            if document_id not in self.documents:
+                raise ValueError(f"Document with id {document_id} does not exist in library. Please provide a document to add the chunk to.")
+            self.documents[document_id].chunks.extend([chunk.id for chunk in chunks])
+        for chunk in chunks:
+            self.chunks[chunk.id] = chunk
+
+        self.rebuild_index()
+
+    def rebuild_index(self):
+        self.indexer.build(list(self.chunks.values()))
     
     def search(self, query_embedding: np.ndarray, k: int = 5) -> list[Chunk]:
         chunk_ids = self.indexer.search(query_embedding, k)

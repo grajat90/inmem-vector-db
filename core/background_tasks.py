@@ -13,6 +13,4 @@ async def reindex_library(library_id: str):
     # Use the lock to prevent concurrent reindexing
     async with lock:
         library = libraries[library_id]
-        # Rebuild the index
-        chunks = list(library.chunks.values())
-        library.indexer.build(chunks) 
+        library.rebuild_index()

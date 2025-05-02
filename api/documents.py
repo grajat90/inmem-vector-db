@@ -29,7 +29,6 @@ class DocumentRequest(BaseModel):
 async def add_document(
     library_id: str,
     document_request: DocumentRequest,
-    background_tasks: BackgroundTasks,
     libraries: Dict[str, Library] = Depends(get_libraries),
 ):
     """

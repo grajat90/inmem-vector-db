@@ -1,11 +1,11 @@
-from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks
+from fastapi import APIRouter, BackgroundTasks, HTTPException, Depends
 from typing import List, Dict, Optional
 from pydantic import BaseModel, Field
 
 from models.chunk import Chunk, ChunkMetadata
 from models.library import Library
 from dependencies import get_libraries
-from core.embedding import get_embedding
+from core.embedding import get_embedding, get_embeddings
 
 router = APIRouter(
     tags=["chunks"],
@@ -57,6 +57,58 @@ async def add_chunk(
         "document_id": document_id,
         "library_id": library_id,
         "message": "Chunk added successfully"
+    }
+
+@router.post("/libraries/{library_id}/chunks/batch", response_model=dict)
+async def add_chunks_batch(
+    library_id: str,
+    chunk_requests: List[ChunkRequest],
+    background_tasks: BackgroundTasks,
+    libraries: Dict[str, Library] = Depends(get_libraries),
+):
+    """Add multiple chunks to a library in a single batch operation"""
+    if library_id not in libraries:
+        raise HTTPException(status_code=404, detail="Library not found")
+    
+    library = libraries[library_id]
+    
+    # Validate all document IDs exist before processing
+    document_ids = {chunk_request.document_id for chunk_request in chunk_requests}
+    for document_id in document_ids:
+        if document_id not in library.documents:
+            raise HTTPException(status_code=404, detail=f"Document with ID {document_id} not found")
+    
+    # Collect all chunk texts for batch embedding
+    chunk_texts = [chunk_request.text for chunk_request in chunk_requests]
+    
+    # Get embeddings in batch
+    embeddings = await get_embeddings(chunk_texts)
+    
+    chunks: list[Chunk] = []
+    
+    # Create and add each chunk
+    for i, (chunk_request, embedding) in enumerate(zip(chunk_requests, embeddings)):
+        document_id = chunk_request.document_id
+        
+        # Create chunk with metadata
+        chunk_metadata = chunk_request.metadata or ChunkMetadata(source="api")
+        chunk = Chunk(
+            text=chunk_request.text,
+            embedding=embedding,
+            document_id=document_id,
+            metadata=chunk_metadata
+        )
+        
+        # Add chunk to library and document
+        chunks.append(chunk)
+    
+    background_tasks.add_task(library.add_chunks, chunks)
+    
+    return {
+        "library_id": library_id,
+        "added_chunks": [chunk.id for chunk in chunks],
+        "count": len(chunks),
+        "message": "Chunks added successfully"
     }
 
 
@@ -123,7 +175,6 @@ async def update_chunk(
     library_id: str,
     chunk_id: str,
     chunk_request: ChunkRequest,
-    background_tasks: BackgroundTasks,
     libraries: Dict[str, Library] = Depends(get_libraries),
 ):
     """Update a chunk with metadata"""
@@ -188,7 +239,6 @@ async def update_chunk(
 async def delete_chunk(
     library_id: str,
     chunk_id: str,
-    background_tasks: BackgroundTasks,
     libraries: Dict[str, Library] = Depends(get_libraries),
 ):
     """Delete a chunk"""
