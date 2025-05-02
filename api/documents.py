@@ -5,12 +5,12 @@ from pydantic import BaseModel, Field
 from models.document import Document, DocumentMetadata
 from models.chunk import Chunk, ChunkMetadata
 from models.library import Library
-from app.dependencies import get_libraries
-from app.core.background_tasks import reindex_library
-from app.core.embedding import get_embeddings
+from dependencies import get_libraries
+from core.background_tasks import reindex_library
+from core.embedding import get_embeddings
 
 # Import the chunk request model
-from app.api.libraries import ChunkRequest
+from api.libraries import ChunkRequest
 
 router = APIRouter(
     tags=["documents"],

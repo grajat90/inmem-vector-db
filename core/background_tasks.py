@@ -1,7 +1,4 @@
-import asyncio
-
-# In-memory storage
-from app.dependencies import get_libraries, get_reindex_lock
+from dependencies import get_libraries, get_reindex_lock
 
 async def reindex_library(library_id: str):
     """Reindex a library in the background"""

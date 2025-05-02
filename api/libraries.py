@@ -5,9 +5,9 @@ from pydantic import BaseModel, Field
 from models.library import Library, LibraryMetadata
 from models.document import Document, DocumentMetadata
 from models.chunk import Chunk, ChunkMetadata
-from app.dependencies import get_libraries, get_reindex_lock
-from app.core.background_tasks import reindex_library
-from app.core.embedding import get_embeddings
+from dependencies import get_libraries, get_reindex_lock
+from core.background_tasks import reindex_library
+from core.embedding import get_embeddings
 
 router = APIRouter(
     prefix="/libraries",

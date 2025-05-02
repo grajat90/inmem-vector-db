@@ -1,6 +1,5 @@
 import numpy as np
 import cohere
-from typing import Optional
 
 # Initialize Cohere client
 co = cohere.Client("A1Fi5KBBNoekwBPIa833CBScs6Z2mHEtOXxr52KO")

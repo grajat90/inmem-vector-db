@@ -5,8 +5,8 @@ from enum import Enum
 
 from models.library import Library
 from indexers.indexer import DistanceMetric
-from app.dependencies import get_libraries
-from app.core.embedding import get_embedding
+from dependencies import get_libraries
+from core.embedding import get_embedding
 
 router = APIRouter(
     tags=["search"],

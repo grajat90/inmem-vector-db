@@ -42,7 +42,7 @@
 - Added choice for distance heuristic to choose from euclidean l2, cosine distance, manhattan or dot product
 
 ### API design choice
-- Structure into app dir with api folder containing api routes
+- Structure into ~~app dir with~~ api folder containing api routes
 - other core functionality in core folder
 - co located but separate dependecies file
 - create async tasks for reindexing etc

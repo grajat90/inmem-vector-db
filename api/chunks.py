@@ -4,8 +4,8 @@ from pydantic import BaseModel, Field
 
 from models.chunk import Chunk, ChunkMetadata
 from models.library import Library
-from app.dependencies import get_libraries
-from app.core.embedding import get_embedding
+from dependencies import get_libraries
+from core.embedding import get_embedding
 
 router = APIRouter(
     tags=["chunks"],

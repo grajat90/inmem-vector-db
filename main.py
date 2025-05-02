@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import libraries, documents, chunks, search
+from api import libraries, documents, chunks, search
 
 # Create FastAPI app
 app = FastAPI(
