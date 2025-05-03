@@ -3,7 +3,6 @@ from models.chunk import Chunk
 import numpy as np
 import math
 import random
-import pickle
 from datetime import datetime
 from typing import List, Tuple
 from threading import Lock
@@ -276,50 +275,6 @@ class HSNWIndexer(Indexer):
             # Return k closest nodes
             return [node_id for node_id, _ in nearest[:k]]
     
-    def save(self, path: str):
-        """Save the index to disk"""
-        data = None
-        with self._lock:
-            data = {
-                'graph': self._graph,
-                'entry_point': self._entry_point,
-                'max_layer': self._max_layer,
-                'node_levels': self._node_levels,
-                'embeddings': self.embeddings,
-                'created': self.created,
-                'last_updated': self.last_updated,
-                'name': self.name,
-                'm': self._m,
-                'm_max0': self._m_max0,
-                'ef_construction': self._ef_construction,
-                'max_level': self._max_level,
-                'level_mult': self._level_mult,
-                'dim': self._dim
-            }
-            
-        with open(path, 'wb') as f:
-            pickle.dump(data, f)
-    
-    def load(self, path: str):
-        """Load the index from disk"""
-        with open(path, 'rb') as f:
-            data = pickle.load(f)
-
-        with self._lock:
-            self._graph = data['graph']
-            self._entry_point = data['entry_point']
-            self._max_layer = data['max_layer']
-            self._node_levels = data['node_levels']
-            self.embeddings = data['embeddings']
-            self.created = data['created']
-            self.last_updated = data['last_updated']
-            self.name = data['name']
-            self._m = data['m']
-            self._m_max0 = data['m_max0']
-            self._ef_construction = data['ef_construction']
-            self._max_level = data['max_level']
-            self._level_mult = data['level_mult']
-            self._dim = data['dim']
     
     # Internal helper methods
     

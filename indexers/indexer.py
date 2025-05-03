@@ -66,14 +66,6 @@ class Indexer(BaseModel, ABC):
         """
         pass
 
-    @abstractmethod
-    def save(self, path: str):
-        pass
-
-    @abstractmethod
-    def load(self, path: str):
-        pass
-
     def _calculate_distance(
         self, 
         query_embedding: np.ndarray, 

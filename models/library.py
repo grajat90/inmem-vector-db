@@ -42,7 +42,7 @@ class Library(BaseModel):
         return self.documents[document_id]
     
     def add_chunk(self, chunk: Chunk, document: Optional[Document] = None):
-        document_id = chunk.metadata.document_id
+        document_id = chunk.document_id
         with self._lock:
             if document_id not in self.documents:
                 if document is None:
@@ -55,7 +55,7 @@ class Library(BaseModel):
             self.indexer.add(chunk.id, chunk.embedding)
 
     def add_chunks(self, chunks: list[Chunk]):
-        document_ids = {chunk.metadata.document_id for chunk in chunks}
+        document_ids = {chunk.document_id for chunk in chunks}
         for document_id in document_ids:
             if document_id not in self.documents:
                 raise ValueError(f"Document with id {document_id} does not exist in library. Please provide a document to add the chunk to.")
