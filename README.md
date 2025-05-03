@@ -1,4 +1,4 @@
-# StackAI Vector Database
+#  In Memory Vector Database
 
 A vector database implementation with embedding-based search capabilities built using FastAPI.
 
@@ -40,7 +40,7 @@ You can refer to API docs be going over to `localhost:8000/docs`
 ```bash
 # Clone the repository
 git clone <repository-url>
-cd stackai-vector-db
+cd vector-db
 
 # Install dependencies
 pip install -r requirements.txt
@@ -90,7 +90,7 @@ docker-compose up
 ├── tests/                  # Test suite
 │   ├── unit/               # Unit tests
 │   └── integration/        # Integration tests
-├── stackai-vector-db/      # Helm chart for Kubernetes
+├── vector-db/      # Helm chart for Kubernetes
 ├── Dockerfile              # Docker configuration
 ├── docker-compose.yml      # Docker Compose configuration
 ├── requirements.txt        # Python dependencies

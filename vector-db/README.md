@@ -1,6 +1,6 @@
-# StackAI Vector Database Helm Chart
+#  Vector Database Helm Chart
 
-This Helm chart deploys the StackAI Vector Database API in a Kubernetes cluster.
+This Helm chart deploys the  Vector Database API in a Kubernetes cluster.
 
 ## Prerequisites
 
@@ -14,21 +14,21 @@ Before deploying the chart, you need to build the Docker image for the applicati
 
 ```bash
 # From the root of the project
-docker build -t stackai-vector-db:latest .
+docker build -t vector-db:latest .
 ```
 
 If deploying to a remote Kubernetes cluster, you'll need to push the image to a container registry:
 
 ```bash
 # Tag the image for your registry
-docker tag stackai-vector-db:latest your-registry.io/stackai-vector-db:latest
+docker tag vector-db:latest your-registry.io/vector-db:latest
 
 # Push the image
-docker push your-registry.io/stackai-vector-db:latest
+docker push your-registry.io/vector-db:latest
 
 # Update the values.yaml file to use your registry
 # image:
-#   repository: your-registry.io/stackai-vector-db
+#   repository: your-registry.io/vector-db
 #   tag: latest
 ```
 
@@ -37,7 +37,7 @@ docker push your-registry.io/stackai-vector-db:latest
 To install the chart with the release name `vector-db`:
 
 ```bash
-helm install vector-db ./stackai-vector-db
+helm install vector-db ./vector-db
 ```
 
 ## Uninstalling the Chart
@@ -50,12 +50,12 @@ helm delete vector-db
 
 ## Configuration
 
-The following table lists the configurable parameters of the StackAI Vector Database chart and their default values.
+The following table lists the configurable parameters of the  Vector Database chart and their default values.
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|
 | `replicaCount` | Number of replicas | `1` |
-| `image.repository` | Image repository | `stackai-vector-db` |
+| `image.repository` | Image repository | `vector-db` |
 | `image.tag` | Image tag | `latest` |
 | `image.pullPolicy` | Image pull policy | `IfNotPresent` |
 | `service.type` | Kubernetes Service type | `ClusterIP` |
@@ -74,5 +74,5 @@ Specify each parameter using the `--set key=value[,key=value]` argument to `helm
 Alternatively, a YAML file that specifies the values for the parameters can be provided while installing the chart:
 
 ```bash
-helm install vector-db ./stackai-vector-db -f values.yaml
+helm install vector-db ./vector-db -f values.yaml
 ``` 

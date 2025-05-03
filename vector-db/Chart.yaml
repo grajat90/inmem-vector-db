@@ -1,6 +1,6 @@
 apiVersion: v2
-name: stackai-vector-db
-description: A Helm chart for the StackAI Vector Database API
+name: vector-db
+description: A Helm chart for the Vector Database API
 
 # A chart can be either an 'application' or a 'library' chart.
 #

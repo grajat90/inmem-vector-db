@@ -1,0 +1,72 @@
+Building Docker image for vector-db in Minikube's Docker environment...
+#1 [internal] load build definition from Dockerfile
+#1 sha256:967e1a54c4d9af30a1821dcec686d8bd6d158c28ab2a8e55a252bfe6c2d06f58
+#1 transferring dockerfile: 613B done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/python:3.10-slim
+#2 sha256:8aa87114592e16e55cc5ec5c194275cbdae3fc9413ef3d1199ef55eafb094a0a
+#2 DONE 4.8s
+
+#3 [internal] load .dockerignore
+#3 sha256:a1bc19e06de7e1e4280f112b66ad9fdd2a7e4fca7565dbf76018c833d7cfab4e
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#10 [1/6] FROM docker.io/library/python:3.10-slim@sha256:57038683f4a259e17fcff1ccef7ba30b1065f4b3317dabb5bd7c82640a5ed64f
+#10 sha256:07deafdc84f0a73541da9bc0ec0d37d5cd9d024c4fb68c8866335b94dfc28e87
+#10 DONE 0.0s
+
+#7 [internal] load build context
+#7 sha256:c8fdd63166884b9e830de7fe1df0b38c2880e06bd692f02efb72ce0e7a94b7f1
+#7 transferring context: 19.29kB 0.0s done
+#7 DONE 0.0s
+
+#6 [4/6] COPY requirements.txt .
+#6 sha256:5fcabaf489d5231c4374e12f92dc93edd8f37883c14972f687397a9ca91ac96b
+#6 CACHED
+
+#8 [3/6] RUN apt-get update && apt-get install -y --no-install-recommends gcc &&     apt-get clean && rm -rf /var/lib/apt/lists/*
+#8 sha256:f58d5c843c487d47f9a1f652431ddd9499ecbfb4cb00ae898113a688ae4e91f1
+#8 CACHED
+
+#9 [2/6] WORKDIR /app
+#9 sha256:555ade9a484b503331e2872e0317e8d1cb3f8dfc158a4124ef1e67eec3182958
+#9 CACHED
+
+#5 [5/6] RUN pip install --no-cache-dir -r requirements.txt
+#5 sha256:b3270b9c9a8f089d6db101968001aef0a10d0de50a25595418d93f32392f65e6
+#5 CACHED
+
+#4 [6/6] COPY . .
+#4 sha256:256355dd26eea97ab7f0792ffc9969aceac913b487f208adfd5b1cf3c47d86be
+#4 DONE 0.1s
+
+#11 exporting to image
+#11 sha256:b1d0cbfcde4288a18115544988cd83394863ba544b72992ab23aae805a919047
+#11 exporting layers 0.0s done
+#11 writing image sha256:dd1ba95a4dbf7efc9a3fdc7639b6fddeea78139c9d114f260d3f8b619b658c1f done
+#11 naming to docker.io/library/vector-db:latest done
+#11 DONE 0.1s
+Checking for existing Helm release...
+Upgrading existing Helm release...
+Release "vector-db" has been upgraded. Happy Helming!
+NAME: vector-db
+LAST DEPLOYED: Sat May  3 14:39:04 2025
+NAMESPACE: default
+STATUS: deployed
+REVISION: 3
+NOTES:
+1. Get the application URL by running these commands:
+  export POD_NAME=$(kubectl get pods --namespace default -l "app.kubernetes.io/name=vector-db,app.kubernetes.io/instance=vector-db" -o jsonpath="{.items[0].metadata.name}")
+  export CONTAINER_PORT=$(kubectl get pod --namespace default $POD_NAME -o jsonpath="{.spec.containers[0].ports[0].containerPort}")
+  echo "Visit http://127.0.0.1:8000 to use your application"
+  kubectl --namespace default port-forward $POD_NAME 8000:$CONTAINER_PORT
+
+2. Access the API documentation at the following URL:
+   http://YOUR_HOST:8000/docs
+
+3. Check the health of the application:
+   http://YOUR_HOST:8000/
+Waiting for deployment to be ready...
+Error from server (NotFound): deployments.apps "vector-db-vector-db" not found
