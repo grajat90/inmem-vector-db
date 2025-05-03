@@ -19,6 +19,12 @@ fi
 echo "Waiting for deployment to be ready..."
 kubectl rollout status deployment/vector-db-stackai-vector-db
 kubectl port-forward svc/vector-db-stackai-vector-db 8000:8000 &
+# Store the PID of the port-forwarding process
+PORT_FORWARD_PID=$!
+
+echo "Port forwarding started with PID: $PORT_FORWARD_PID"
+echo "To stop port forwarding, run: kill $PORT_FORWARD_PID"
+
 
 echo "Deployment successful! Here's how to access the application:"
 echo "Run: kubectl port-forward svc/vector-db-stackai-vector-db 8000:8000"

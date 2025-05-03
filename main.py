@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from api import libraries, documents, chunks, search
+from dependencies import load_libraries_from_disk
 
 # Create FastAPI app
 app = FastAPI(
@@ -25,6 +26,7 @@ app.include_router(documents.router)
 app.include_router(chunks.router)
 app.include_router(search.router)
 
+
 @app.get("/")
 async def root():
     """Root endpoint with API information"""
@@ -35,5 +37,7 @@ async def root():
     }
 
 if __name__ == "__main__":
+    # reinstate all libraries from data folder if any
+    load_libraries_from_disk()
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000) 

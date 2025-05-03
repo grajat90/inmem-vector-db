@@ -5,6 +5,7 @@ from pydantic import BaseModel, Field
 
 from indexers.flat_index import FlatIndexer
 from indexers.hsnw import HSNWIndexer
+from indexers.lsh import LSHIndexer
 from indexers.indexer import Indexer
 from models.library import Library, LibraryMetadata
 from models.document import Document, DocumentMetadata
@@ -22,6 +23,7 @@ router = APIRouter(
 class IndexerRequest(str, Enum):
     FLAT = "flat"
     HSNW = "hsnw"
+    LSH = "lsh"
 
 # Request schemas for nested creation
 class ChunkRequest(BaseModel):
@@ -58,6 +60,8 @@ async def create_library(
     indexer : Indexer = None
     if library_request.indexer == IndexerRequest.HSNW:
         indexer = HSNWIndexer()
+    elif library_request.indexer == IndexerRequest.LSH:
+        indexer = LSHIndexer()
     else:
         indexer = FlatIndexer()
     

@@ -15,7 +15,8 @@ test_chunks_df = pd.read_csv(csv_path)
 # Track library IDs for different indexers across tests
 library_ids = {
     "flat": None,
-    "hsnw": None
+    "hsnw": None,
+    "lsh": None  # Added LSH indexer
 }
 
 def create_library_with_indexer(client: TestClient, indexer_type: str) -> Response:
@@ -80,17 +81,32 @@ def test_create_library_with_flat_indexer():
     # Store the library ID for later tests
     library_ids["flat"] = response.json()["library_id"]
 
+def test_create_library_with_lsh_indexer():
+    """Test creating a library with LSH indexer"""
+    response = create_library_with_indexer(client, "lsh")
+    
+    # Print the error response for debugging
+    if response.status_code != 200:
+        print(f"\nError response: {response.status_code}")
+        print(f"Response content: {response.content.decode()}")
+    
+    assert response.status_code == 200
+    assert response.json()["name"] == "Test Library - LSH"
+    # Store the library ID for later tests
+    library_ids["lsh"] = response.json()["library_id"]
+
 def test_list_libraries():
     """Test listing all libraries"""
     response = client.get("/libraries")
     assert response.status_code == 200
-    # We should have at least 2 libraries (HSNW and Flat)
-    assert len(response.json()) >= 2
+    # We should have at least 3 libraries (HSNW, Flat, and LSH)
+    assert len(response.json()) >= 3
     
     # Check if our created libraries are in the list
     library_names = [lib["name"] for lib in response.json()]
     assert "Test Library - HSNW" in library_names
     assert "Test Library - FLAT" in library_names
+    assert "Test Library - LSH" in library_names
 
 def test_get_library_details():
     """Test getting details for a specific library"""
@@ -165,11 +181,65 @@ def test_search_library():
     # Assert that the expected chunk text was found in the results
     assert found_expected_text, "Expected chunk text not found in search results"
 
+def test_search_with_lsh_indexer():
+    """Test searching a library with LSH indexer"""
+    library_id = library_ids["lsh"]
+    if not library_id:
+        pytest.skip("LSH library not created, skipping test")
+        
+    search_request = {
+        "query": "How do I get started with crypto mining?",
+        "k": 5,
+        "distance_metric": "cosine",
+        "include_metadata": False,
+        "include_embeddings": False
+    }
+    
+    search_response = client.post(f"/libraries/{library_id}/search", json=search_request)
+    assert search_response.status_code == 200
+    
+    # Assert that the response contains the expected fields
+    assert "query" in search_response.json()
+    assert "results" in search_response.json()
+    assert "documents" in search_response.json()
+    assert "total_results" in search_response.json()
+    
+    # Assert that we have results
+    assert len(search_response.json()["results"]) > 0
+    
+    # Check for the specific chunk text in the results (may be different than HSNW due to approximate nature)
+    # But we should still get relevant results, so just check we have some
+    assert search_response.json()["total_results"] > 0
+
 def test_search_with_different_metrics():
     """Test searching with different distance metrics"""
     metrics = ["euclidean", "cosine", "dot_product", "manhattan"]
+    
+    # Test with HSNW indexer (legacy)
     library_id = library_ids["hsnw"]
     
+    for metric in metrics:
+        search_request = {
+            "query": "Tell me about renewable energy",
+            "k": 3,
+            "distance_metric": metric,
+            "include_metadata": True,
+            "include_embeddings": False
+        }
+        
+        response = client.post(f"/libraries/{library_id}/search", json=search_request)
+        assert response.status_code == 200
+        results = response.json()["results"]
+        assert len(results) > 0
+        # Verify that results contain metadata
+        assert "metadata" in results[0]
+        assert results[0]["metadata"] is not None
+    
+    # Test with LSH indexer
+    library_id = library_ids["lsh"]
+    if not library_id:
+        pytest.skip("LSH library not created, skipping test")
+        
     for metric in metrics:
         search_request = {
             "query": "Tell me about renewable energy",
@@ -208,6 +278,19 @@ def test_search_with_tag_filtering():
     # Verify that all results have the specified tag
     for result in results:
         assert "test" in result["metadata"]["tags"]
+    
+    # Test the same with LSH indexer
+    library_id = library_ids["lsh"]
+    if not library_id:
+        pytest.skip("LSH library not created, skipping test")
+        
+    response = client.post(f"/libraries/{library_id}/search", json=search_request)
+    assert response.status_code == 200
+    results = response.json()["results"]
+    
+    # Verify that all results have the specified tag
+    for result in results:
+        assert "test" in result["metadata"]["tags"]
 
 def test_search_with_embeddings():
     """Test searching with embeddings included in response"""
@@ -221,6 +304,23 @@ def test_search_with_embeddings():
         "include_embeddings": True
     }
     
+    response = client.post(f"/libraries/{library_id}/search", json=search_request)
+    assert response.status_code == 200
+    results = response.json()["results"]
+    
+    # Verify that results contain embeddings
+    assert len(results) > 0
+    assert "embedding" in results[0]
+    assert results[0]["embedding"] is not None
+    # Embeddings should be lists of floating point numbers
+    assert isinstance(results[0]["embedding"], list)
+    assert isinstance(results[0]["embedding"][0], float)
+    
+    # Test with LSH indexer
+    library_id = library_ids["lsh"]
+    if not library_id:
+        pytest.skip("LSH library not created, skipping test")
+        
     response = client.post(f"/libraries/{library_id}/search", json=search_request)
     assert response.status_code == 200
     results = response.json()["results"]
@@ -279,6 +379,38 @@ def test_add_chunk_to_document():
         "metadata": {
             "source": "test",
             "tags": ["new", "added", "chunk"]
+        }
+    }
+    
+    response = client.post(f"/libraries/{library_id}/chunks", json=chunk_request)
+    assert response.status_code == 200
+    assert "chunk_id" in response.json()
+    
+    # Get the chunk to verify it was added
+    chunk_id = response.json()["chunk_id"]
+    get_chunk_response = client.get(f"/libraries/{library_id}/chunks/{chunk_id}")
+    assert get_chunk_response.status_code == 200
+    assert get_chunk_response.json()["text"] == chunk_request["text"]
+    
+    # Test the same with LSH indexer
+    library_id = library_ids["lsh"]
+    if not library_id:
+        pytest.skip("LSH library not created, skipping test")
+    
+    # First get a document from the library
+    get_response = client.get(f"/libraries/{library_id}")
+    assert get_response.status_code == 200
+    documents = get_response.json()["documents"]
+    assert len(documents) > 0
+    document_id = documents[0]
+    
+    # Add a chunk to this document
+    chunk_request = {
+        "text": "This is a new test chunk added to the LSH indexed library to test functionality.",
+        "document_id": document_id,
+        "metadata": {
+            "source": "test",
+            "tags": ["new", "added", "chunk", "lsh"]
         }
     }
     
@@ -370,6 +502,15 @@ def test_invalid_search_metric():
     response = client.post(f"/libraries/{library_id}/search", json=search_request)
     assert response.status_code == 400
     assert "Invalid distance metric" in response.json()["detail"]
+    
+    # Test the same with LSH indexer
+    library_id = library_ids["lsh"]
+    if not library_id:
+        pytest.skip("LSH library not created, skipping test")
+        
+    response = client.post(f"/libraries/{library_id}/search", json=search_request)
+    assert response.status_code == 400
+    assert "Invalid distance metric" in response.json()["detail"]
 
 def test_delete_document():
     """Test deleting a document"""
@@ -384,6 +525,33 @@ def test_delete_document():
         "metadata": {
             "source": "test_delete",
             "tags": ["delete"]
+        }
+    }
+    
+    create_response = client.post(f"/libraries/{library_id}/documents", json=document_request)
+    assert create_response.status_code == 200
+    document_id = create_response.json()["document_id"]
+    
+    # Now delete the document
+    delete_response = client.delete(f"/libraries/{library_id}/documents/{document_id}")
+    assert delete_response.status_code == 200
+    
+    # Verify it's deleted
+    get_response = client.get(f"/libraries/{library_id}/documents/{document_id}")
+    assert get_response.status_code == 404
+    
+    # Test the same with LSH indexer
+    library_id = library_ids["lsh"]
+    if not library_id:
+        pytest.skip("LSH library not created, skipping test")
+    
+    # First add a document to delete
+    document_request = {
+        "title": "LSH Document to Delete",
+        "description": "This document will be deleted in the LSH test",
+        "metadata": {
+            "source": "test_delete",
+            "tags": ["delete", "lsh"]
         }
     }
     
@@ -450,29 +618,63 @@ def test_batch_add_chunks():
     # Response should contain the IDs of added chunks
     assert "added_chunks" in response.json()
     assert len(response.json()["added_chunks"]) == 3
+    
+    # Test the same with LSH indexer
+    library_id = library_ids["lsh"]
+    if not library_id:
+        pytest.skip("LSH library not created, skipping test")
+    
+    # Get a document from the library
+    get_response = client.get(f"/libraries/{library_id}")
+    assert get_response.status_code == 200
+    documents = get_response.json()["documents"]
+    assert len(documents) > 0
+    document_id = documents[0]
+    
+    # Create a batch of chunks
+    chunks_batch = [
+        {
+            "text": f"LSH batch test chunk {i}",
+            "document_id": document_id,
+            "metadata": {
+                "source": "batch_test",
+                "tags": ["batch", "test", "lsh", f"chunk{i}"]
+            }
+        }
+        for i in range(3)
+    ]
+    
+    response = client.post(f"/libraries/{library_id}/chunks/batch", json=chunks_batch)
+    assert response.status_code == 200
+    # Response should contain the IDs of added chunks
+    assert "added_chunks" in response.json()
+    assert len(response.json()["added_chunks"]) == 3
 
 def test_search_performance():
     """Test search performance with different k values"""
-    library_id = library_ids["hsnw"]
-    k_values = [5, 10, 20]
-    
-    query = "What is the impact of climate change?"
-    
-    for k in k_values:
-        search_request = {
-            "query": query,
-            "k": k,
-            "distance_metric": "cosine",
-            "include_metadata": False,
-            "include_embeddings": False
-        }
+    for indexer_type in ["hsnw", "flat", "lsh"]:
+        library_id = library_ids[indexer_type]
+        if not library_id:
+            continue
+            
+        k_values = [5, 10, 20]
+        query = "What is the impact of climate change?"
         
-        response = client.post(f"/libraries/{library_id}/search", json=search_request)
-        assert response.status_code == 200
-        results = response.json()["results"]
-        
-        # Should return at most k results
-        assert len(results) <= k
-        
-        # If fewer than k results are returned, should match total_results
-        assert len(results) == min(k, response.json()["total_results"])
+        for k in k_values:
+            search_request = {
+                "query": query,
+                "k": k,
+                "distance_metric": "cosine",
+                "include_metadata": False,
+                "include_embeddings": False
+            }
+            
+            response = client.post(f"/libraries/{library_id}/search", json=search_request)
+            assert response.status_code == 200
+            results = response.json()["results"]
+            
+            # Should return at most k results
+            assert len(results) <= k
+            
+            # If fewer than k results are returned, should match total_results
+            assert len(results) == min(k, response.json()["total_results"])
