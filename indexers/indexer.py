@@ -66,6 +66,14 @@ class Indexer(BaseModel, ABC):
         """
         pass
 
+    @abstractmethod
+    def get_dict_repr(self) -> dict:
+        pass
+
+    @abstractmethod
+    def load_from_dict(self, dict_repr: dict):
+        pass
+
     def _calculate_distance(
         self, 
         query_embedding: np.ndarray, 

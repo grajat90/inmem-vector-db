@@ -1,4 +1,5 @@
 from datetime import datetime
+import os
 from threading import Lock
 from typing import Optional
 import uuid
@@ -8,7 +9,7 @@ from indexers.flat_index import FlatIndexer
 from indexers.indexer import Indexer
 from models.chunk import Chunk
 from models.document import Document
-
+import pickle
 
 class LibraryMetadata(BaseModel):
     created_at: datetime = Field(default_factory=datetime.now, description="The date and time the library was created")
@@ -25,9 +26,15 @@ class Library(BaseModel):
     # Thread safety lock for concurrent operations
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        data_dir = os.path.join(os.path.dirname(__file__), "../data")
+        os.makedirs(data_dir, exist_ok=True)
+        self._save_path = os.path.join(data_dir, f"{self.name}.pkl")
         self._lock = Lock()
         with self._lock:
             self.indexer.build(list(self.chunks.values()))
+
+        if os.path.exists(self._save_path):
+            self.load(self._save_path)
 
     def get_chunks(self, chunk_ids: list[str]) -> list[Chunk]:
         return [self.chunks[chunk_id] for chunk_id in chunk_ids]
@@ -53,6 +60,7 @@ class Library(BaseModel):
                 self.documents[document_id].chunks.append(chunk.id)
             self.chunks[chunk.id] = chunk
             self.indexer.add(chunk.id, chunk.embedding)
+        self.save(self._save_path)
 
     def add_chunks(self, chunks: list[Chunk]):
         document_ids = {chunk.document_id for chunk in chunks}
@@ -71,3 +79,30 @@ class Library(BaseModel):
     def search(self, query_embedding: np.ndarray, k: int = 5) -> list[Chunk]:
         chunk_ids = self.indexer.search(query_embedding, k)
         return self.get_chunks(chunk_ids)
+    
+    def save(self, path: str):
+
+        self_data = {
+            "id": self.id,
+            "name": self.name,
+            "documents": self.documents,
+            "chunks": self.chunks,
+            "metadata": self.metadata,
+            "indexer": self.indexer.get_dict_repr()
+        }
+
+        with self._lock:
+            with open(path, "wb") as f:
+                pickle.dump(self_data, f)
+
+    def load(self, path: str):
+        with open(path, "rb") as f:
+            self_data = pickle.load(f)
+
+        with self._lock:
+            self.id = self_data["id"]
+            self.name = self_data["name"]
+            self.documents = self_data["documents"]
+            self.chunks = self_data["chunks"]
+            self.metadata = self_data["metadata"]
+            self.indexer.load_from_dict(self_data["indexer"])

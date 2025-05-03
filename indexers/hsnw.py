@@ -1,10 +1,11 @@
+from pydantic import BaseModel, Field, field_validator
 from indexers.indexer import DistanceMetric, Indexer
 from models.chunk import Chunk
 import numpy as np
 import math
 import random
 from datetime import datetime
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 from threading import Lock
 
 
@@ -275,7 +276,55 @@ class HSNWIndexer(Indexer):
             # Return k closest nodes
             return [node_id for node_id, _ in nearest[:k]]
     
+    def get_dict_repr(self) -> dict:
+        """Get a complete dictionary representation of the indexer for serialization"""
+        return {
+            "name": self.name,
+            "created": self.created.isoformat(),
+            "last_updated": self.last_updated.isoformat(),
+            "embeddings": {k: v.tolist() for k, v in self.embeddings.items()},
+            "graph": self._graph,
+            "entry_point": self._entry_point,
+            "max_layer": self._max_layer,
+            "node_levels": self._node_levels,
+            "m": self._m,
+            "m_max0": self._m_max0,
+            "ef_construction": self._ef_construction,
+            "max_level": self._max_level,
+            "level_mult": self._level_mult,
+            "dim": self._dim
+        }
     
+    def load_from_dict(self, dict_repr: dict):
+        """Restore the indexer from a dictionary representation"""
+
+        try:
+            # Validate with Pydantic
+            config = HSNWConfig(**dict_repr)
+            
+            # Apply validated data
+            self.name = config.name
+            self.created = config.created
+            self.last_updated = config.last_updated
+            
+            # Convert embedding lists back to numpy arrays
+            self.embeddings = {k: np.array(v) for k, v in config.embeddings.items()}
+            
+            self._graph = config.graph
+            self._entry_point = config.entry_point
+            self._max_layer = config.max_layer
+            self._node_levels = config.node_levels
+            self._m = config.m
+            self._m_max0 = config.m_max0
+            self._ef_construction = config.ef_construction
+            self._max_level = config.max_level
+            self._level_mult = config.level_mult
+            self._dim = config.dim
+            
+        except Exception as e:
+            raise ValueError(f"Failed to load HSNW indexer from dictionary: {str(e)}")
+        
+        
     # Internal helper methods
     
     def _random_level(self) -> int:
@@ -364,3 +413,60 @@ class HSNWIndexer(Indexer):
         """Calculate distance between two vectors using the specified metric"""
         return super()._calculate_distance(vec1, vec2, distance_metric)
 
+
+
+
+class HSNWConfig(BaseModel):
+    name: str = Field(..., description="Name of the indexer")
+    created: str = Field(..., description="Creation timestamp as ISO format string")
+    last_updated: str = Field(..., description="Last updated timestamp as ISO format string")
+    embeddings: dict[str, list[float]] = Field(..., description="Embeddings dictionary")
+    graph: dict[int, dict[str, set[str]]] = Field(..., description="Graph structure")
+    entry_point: Optional[str] = Field(None, description="Entry point node ID")
+    max_layer: int = Field(..., description="Maximum layer in the graph")
+    node_levels: dict[str, int] = Field(..., description="Node levels mapping")
+    m: int = Field(..., description="Maximum number of connections per node")
+    m_max0: int = Field(..., description="Maximum connections for ground layer")
+    ef_construction: int = Field(..., description="Size of dynamic candidate list during construction")
+    max_level: int = Field(..., description="Maximum layer in the graph")
+    level_mult: float = Field(..., description="Level multiplier")
+    dim: Optional[int] = Field(None, description="Dimensionality of vectors")
+    
+    @field_validator('created', 'last_updated')
+    @classmethod
+    def validate_datetime(cls, v):
+        try:
+            return datetime.fromisoformat(v)
+        except ValueError:
+            raise ValueError(f"Invalid datetime format: {v}")
+    
+    @field_validator('graph')
+    @classmethod
+    def validate_graph(cls, v):
+        for level, nodes in v.items():
+            if not isinstance(level, int) or level < 0:
+                raise ValueError(f"Invalid level {level} in graph")
+            
+            for node_id, neighbors in nodes.items():
+                if not isinstance(node_id, str):
+                    raise ValueError(f"Node ID must be a string, got {type(node_id)}")
+                
+                if not isinstance(neighbors, set) and not isinstance(neighbors, list):
+                    raise ValueError(f"Neighbors must be a set or list, got {type(neighbors)}")
+                
+                # Convert lists to sets if needed
+                if isinstance(neighbors, list):
+                    v[level][node_id] = set(neighbors)
+        return v
+    
+    @field_validator('embeddings')
+    @classmethod
+    def validate_embeddings(cls, v):
+        if not v:
+            return v
+            
+        # Check consistency of embedding dimensions
+        dims = [len(emb) for emb in v.values()]
+        if len(set(dims)) > 1:
+            raise ValueError(f"Inconsistent embedding dimensions: {set(dims)}")
+        return v

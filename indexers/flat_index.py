@@ -2,6 +2,8 @@ import numpy as np
 from datetime import datetime
 from threading import Lock
 
+from pydantic import BaseModel
+
 from indexers.indexer import DistanceMetric, Indexer
 from models.chunk import Chunk
 
@@ -86,3 +88,38 @@ class FlatIndexer(Indexer):
         nearest_ids = sorted(distances.keys(), key=lambda k: distances[k])[:k]
         
         return nearest_ids
+    
+    def get_dict_repr(self) -> dict:
+        """Get a complete dictionary representation of the indexer for serialization"""
+        return {
+            "name": self.name,
+            "created": self.created.isoformat(),
+            "last_updated": self.last_updated.isoformat(),
+            "embeddings": {k: v.tolist() for k, v in self.embeddings.items()}
+        }
+    
+    def load_from_dict(self, dict_repr: dict):
+        """Restore the indexer from a dictionary representation"""
+        try:
+            # Validate with Pydantic
+            config = FlatIndexConfig(**dict_repr)
+            
+            # Apply validated data
+            self.name = config.name
+            self.created = config.created
+            self.last_updated = config.last_updated
+            
+            # Convert embedding lists back to numpy arrays
+            self.embeddings = {k: np.array(v) for k, v in config.embeddings.items()}
+            
+            
+        except Exception as e:
+            raise ValueError(f"Failed to load Flat indexer from dictionary: {str(e)}")
+    
+class FlatIndexConfig(BaseModel):
+    name: str
+    created: datetime
+    last_updated: datetime
+    embeddings: dict[str, list[float]]
+    
+    
