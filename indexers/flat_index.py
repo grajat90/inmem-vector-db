@@ -1,14 +1,31 @@
 import numpy as np
 from datetime import datetime
 from threading import Lock
+import pickle
 
 from indexers.indexer import DistanceMetric, Indexer
 from models.chunk import Chunk
 
 
 
-
 class FlatIndexer(Indexer):
+    """
+    Flat Indexer
+
+    This indexer is a simple linear search index.
+
+    Time complexity:
+    - Add: O(1)
+    - Search: O(n)
+
+    Space complexity:
+    - O(n)
+
+    Generally fine for smaller datasets. Not recommended for larger datasets.
+
+    """
+
+    
     def __init__(self, name: str = "flat_indexer"):
         super().__init__(name=name, embeddings={})
         self._lock = Lock()  # For thread safety
@@ -40,7 +57,6 @@ class FlatIndexer(Indexer):
             if chunk_id in self.embeddings:
                 self.embeddings[chunk_id] = embedding
                 self.last_updated = datetime.now()
-            
 
     def search(
         self, 
@@ -73,9 +89,25 @@ class FlatIndexer(Indexer):
         return nearest_ids
 
     def save(self, path: str):
-        """Save the index to disk - to be implemented later"""
-        pass
+        """Save the index to disk using pickle"""
+        with self._lock:
+            data = {
+                'embeddings': self.embeddings,
+                'created': self.created,
+                'last_updated': self.last_updated,
+                'name': self.name
+            }
+            
+            with open(path, 'wb') as f:
+                pickle.dump(data, f)
 
     def load(self, path: str):
-        """Load the index from disk - to be implemented later"""
-        pass
+        """Load the index from disk using pickle"""
+        with self._lock:
+            with open(path, 'rb') as f:
+                data = pickle.load(f)
+            
+            self.embeddings = data['embeddings']
+            self.created = data['created']
+            self.last_updated = data['last_updated']
+            self.name = data['name']

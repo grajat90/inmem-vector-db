@@ -1,0 +1,8 @@
+cohere==5.15.0
+fastapi==0.115.12
+importlib-metadata==8.0.0
+jaraco.collections==5.1.0
+pandas==2.2.3
+platformdirs==4.2.2
+pytest==8.3.5
+uvicorn==0.34.2

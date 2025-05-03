@@ -1,4 +1,4 @@
-__pycache__
+__pycache__/
 
 env/
 .vscode/
@@ -7,3 +7,4 @@ env/
 
 DS_Store
 
+.pytest_cache/

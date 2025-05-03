@@ -1,7 +1,11 @@
+from enum import Enum
 from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks
 from typing import List, Dict, Optional
 from pydantic import BaseModel, Field
 
+from indexers.flat_index import FlatIndexer
+from indexers.hsnw import HSNWIndexer
+from indexers.indexer import Indexer
 from models.library import Library, LibraryMetadata
 from models.document import Document, DocumentMetadata
 from models.chunk import Chunk, ChunkMetadata
@@ -14,6 +18,10 @@ router = APIRouter(
     tags=["libraries"],
     responses={404: {"description": "Library not found"}},
 )
+
+class IndexerRequest(str, Enum):
+    FLAT = "flat"
+    HSNW = "hsnw"
 
 # Request schemas for nested creation
 class ChunkRequest(BaseModel):
@@ -29,6 +37,7 @@ class DocumentWithChunksRequest(BaseModel):
 class LibraryRequest(BaseModel):
     name: str = Field(description="The name of the library")
     metadata: Optional[LibraryMetadata] = Field(default=None, description="Metadata for the library")
+    indexer: Optional[IndexerRequest] = Field(default=IndexerRequest.FLAT, description="Indexer to use for the library")
     documents: Optional[List[DocumentWithChunksRequest]] = Field(default=None, description="Documents to include in the library")
 
 
@@ -46,12 +55,19 @@ async def create_library(
     """
     metadata = library_request.metadata or LibraryMetadata(tags=[])
     
+    indexer : Indexer = None
+    if library_request.indexer == IndexerRequest.HSNW:
+        indexer = HSNWIndexer()
+    else:
+        indexer = FlatIndexer()
+    
     # Create the library
     library = Library(
         name=library_request.name,
         documents={},
         chunks={},
-        metadata=metadata
+        metadata=metadata,
+        indexer=indexer
     )
     
     # Add documents and chunks if provided
