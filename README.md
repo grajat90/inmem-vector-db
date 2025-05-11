@@ -1,4 +1,4 @@
-#  In Memory Vector Database
+# In Memory Vector Database
 
 A vector database implementation with embedding-based search capabilities built using FastAPI.
 
@@ -17,7 +17,7 @@ A vector database implementation with embedding-based search capabilities built 
 This project implements a vector database for efficient similarity search with support for multiple indexing strategies. It features strongly-typed data models, robust validation, and asynchronous persistence.
 
 #### API Docs
-You can refer to API docs be going over to `localhost:8000/docs`
+You can refer to API docs by going over to `localhost:8000/docs`
 
 ## Features
 
@@ -27,13 +27,13 @@ You can refer to API docs be going over to `localhost:8000/docs`
 - Save/load functionality with persistence to disk
 - Asynchronous background operations
 - REST API with FastAPI
-- Docker and Kubernetes support
+- Cohere integration for embeddings
 
 ## Setup and Installation
 
 ### Prerequisites
 - Python 3.10+
-- Docker (optional)
+- Cohere API key
 
 ### Local Development Setup
 
@@ -42,61 +42,68 @@ You can refer to API docs be going over to `localhost:8000/docs`
 git clone <repository-url>
 cd vector-db
 
+# Create and activate a virtual environment (optional but recommended)
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
 # Install dependencies
 pip install -r requirements.txt
 
+# Set up environment variables
+cp .env.example .env
+# Edit .env file to add your Cohere API key and other configurations
+
 # Run the application
-uvicorn main:app --reload
+python -m app.main
 ```
 
-### Using Docker
+### Using Environment Variables
 
-```bash
-# Build and run with Docker
-docker build -t vector-db .
-docker run -p 8000:8000 vector-db
+The application uses the following environment variables:
 
-# Alternatively, use docker-compose
-docker-compose up
 ```
-
-### Kubernetes Deployment
-
-```bash
-# Deploy to Minikube
-./minikube-deploy.sh
+API_HOST=0.0.0.0
+API_PORT=8000
+COHERE_API_KEY=your_cohere_api_key
+EMBEDDING_MODEL=embed-v4.0
+DATA_DIRECTORY=./data
 ```
 
 ## Project Structure
 
 ```
 .
-├── api/                    # API endpoints
-│   ├── libraries.py        # Library management endpoints
-│   ├── documents.py        # Document management endpoints
-│   ├── chunks.py           # Chunk management endpoints
-│   └── search.py           # Search functionality endpoints
-├── core/                   # Core functionality
-│   ├── embedding.py        # Embedding creation and management
-│   └── background_tasks.py # Async tasks like reindexing
-├── indexers/               # Vector indexing implementations
-│   ├── flat.py             # Brute force indexer
-│   ├── hnsw.py             # Hierarchical navigable small world
-│   ├── lsh.py              # Locality Sensitive Hashing
-├── models/                 # Data models
-│   ├── library.py          # Library model
-│   ├── document.py         # Document model
-│   └── chunk.py            # Chunk model
+├── app/                    # Main application package
+│   ├── api/                # API functionality
+│   │   ├── endpoints/      # API route handlers
+│   │   │   ├── libraries.py  # Library management endpoints
+│   │   │   ├── documents.py  # Document management endpoints
+│   │   │   ├── chunks.py     # Chunk management endpoints
+│   │   │   └── search.py     # Search functionality endpoints
+│   │   ├── schemas/        # Pydantic models for request/response
+│   │   ├── services/       # Business logic services
+│   │   ├── exceptions/     # Custom exception handlers
+│   │   ├── dependencies.py # FastAPI dependencies
+│   │   └── router.py       # Main API router
+│   ├── core/               # Core functionality
+│   │   ├── models/         # Data models
+│   │   │   ├── library.py  # Library model
+│   │   │   ├── document.py # Document model
+│   │   │   └── chunk.py    # Chunk model
+│   │   ├── indexers/       # Vector indexing implementations
+│   │   │   ├── flat_index.py # Brute force indexer
+│   │   │   ├── hnsw.py     # Hierarchical navigable small world
+│   │   │   ├── lsh.py      # Locality Sensitive Hashing
+│   │   │   └── indexer.py  # Base indexer interface
+│   │   └── embedding.py    # Embedding creation and management
+│   ├── config/             # Configuration settings
+│   └── main.py             # Application entry point
 ├── tests/                  # Test suite
-│   ├── unit/               # Unit tests
-│   └── integration/        # Integration tests
-├── vector-db/      # Helm chart for Kubernetes
-├── Dockerfile              # Docker configuration
-├── docker-compose.yml      # Docker Compose configuration
+├── deployment/             # Deployment configurations
+├── .env.example            # Example environment variables
+├── .env                    # Environment variables (not in version control)
 ├── requirements.txt        # Python dependencies
-├── dependencies.py         # FastAPI dependencies
-├── main.py                 # Application entry point
-└── minikube-deploy.sh      # Kubernetes deployment script
+└── README.md               # Project documentation
 ```
 
 # Design Decisions
@@ -151,6 +158,7 @@ Distance metrics supported:
 - Efficient metadata filtering capabilities
 - Pydantic validation for robust data handling
 - Save/load mechanisms for all index types with automatic recovery on restart
+- Integration with Cohere for generating embeddings
 
 ## References
 

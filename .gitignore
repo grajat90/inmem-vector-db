@@ -13,3 +13,5 @@ DS_Store
 *.pickle
 
 data/
+
+.ruff_cache/
