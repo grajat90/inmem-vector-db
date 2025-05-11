@@ -50,8 +50,9 @@ class LibraryService:
         """
         Add a new library to the in-memory store.
 
-        This method creates a new library with the given name and optional metadata.
-        It also allows for adding documents and their chunks to the library simultaneously.
+        This method creates a new library with the given name and
+        optional metadata. It also allows for adding documents and
+        their chunks to the library simultaneously.
         """
 
         if self.background_tasks is None:
@@ -71,7 +72,9 @@ class LibraryService:
             )
         elif library_request.indexer == IndexerType.LSH:
             hparams: LSHIndexerHParams = get_default_hparams(library_request.indexer)
-            indexer = LSHIndexer(hash_size=hparams.hash_size, num_tables=hparams.num_tables)
+            indexer = LSHIndexer(
+                hash_size=hparams.hash_size, num_tables=hparams.num_tables
+            )
         else:
             indexer = FlatIndexer()
 
@@ -191,7 +194,9 @@ class LibraryService:
 
         # Convert distance metric string to enum
         try:
-            distance_metric: DistanceMetric = DistanceMetric(search_request.distance_metric)
+            distance_metric: DistanceMetric = DistanceMetric(
+                search_request.distance_metric
+            )
         except ValueError:
             raise InvalidDistanceMetricException(search_request.distance_metric)
 
@@ -203,7 +208,9 @@ class LibraryService:
             filtered_results: list[Chunk] = []
             for chunk in results:
                 # Check if all requested tags are in the chunk's tags
-                if all(tag in chunk.metadata.tags for tag in search_request.filter_by_tags):
+                if all(
+                    tag in chunk.metadata.tags for tag in search_request.filter_by_tags
+                ):
                     filtered_results.append(chunk)
             results = filtered_results[: search_request.k]  # Keep only up to k results
 

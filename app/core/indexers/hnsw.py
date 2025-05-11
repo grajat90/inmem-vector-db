@@ -20,7 +20,8 @@ class HNSWIndexer(Indexer):
     """
     Hierarchical Navigable Small World (HNSW) Indexer
 
-    This indexer is basically a skip list of NSW graphs with full graph at the lowest level.
+    This indexer is basically a skip list of NSW graphs with
+    full graph at the lowest level.
 
     Time complexity:
     - Add: O(n log(n))
@@ -29,15 +30,15 @@ class HNSWIndexer(Indexer):
     Worst case space complexity:
     - O(n log(n))
 
-    Generally recommended for very large datasets. Might be overkill and actually inefficient
-    for smaller datasets.
+    Generally recommended for very large datasets.
+    Might be overkill and actually inefficient for smaller datasets.
     """
 
     def __init__(
         self,
         name: str = "hnsw_indexer",
         m: int = hparams.m,  # Maximum number of connections per node
-        ef_construction: int = hparams.ef_construction,  # Size of dynamic candidate list
+        ef_construction: int = hparams.ef_construction,  # Size of candidate list
         max_level: int = hparams.max_level,  # Maximum layer in the graph
         level_mult: float = hparams.level_mult,
     ):  # Level multiplier
@@ -222,7 +223,9 @@ class HNSWIndexer(Indexer):
                 return self.delete(chunk_id, _skip_lock=True)
 
         if chunk_id not in self.embeddings:
-            warnings.warn(f"Chunk {chunk_id} not found in the index. Skipping.", UserWarning)
+            warnings.warn(
+                f"Chunk {chunk_id} not found in the index. Skipping.", UserWarning
+            )
             return
 
         # Get the level of the node to be deleted
@@ -270,7 +273,9 @@ class HNSWIndexer(Indexer):
         """Update an existing item in the index"""
         with self._lock:
             if chunk_id not in self.embeddings:
-                raise ValueError(f"Chunk {chunk_id} not found in the index. Cannot update.")
+                raise ValueError(
+                    f"Chunk {chunk_id} not found in the index. Cannot update."
+                )
 
             # Simple implementation: delete and add again
             self.delete(chunk_id, _skip_lock=True)
@@ -329,7 +334,8 @@ class HNSWIndexer(Indexer):
 
             if len(nearest) == 0:
                 warnings.warn(
-                    "No nearest neighbors found for query embedding. Returning empty list.",
+                    """No nearest neighbors found for query embedding.
+                    Returning empty list.""",
                     UserWarning,
                 )
             elif len(nearest) < k:
@@ -390,7 +396,9 @@ class HNSWIndexer(Indexer):
             self._dim = config.dim
 
         except Exception as e:
-            raise ValueError(f"Failed to load HNSW indexer from dictionary: {str(e)}") from e
+            raise ValueError(
+                f"Failed to load HNSW indexer from dictionary: {str(e)}"
+            ) from e
 
     # Internal helper methods
 
@@ -426,7 +434,9 @@ class HNSWIndexer(Indexer):
         candidates = [
             (entry_point, distance_to_entry)
         ]  # Min heap for candidates (closest first)
-        nearest = [(entry_point, distance_to_entry)]  # Max heap for results (farthest first)
+        nearest = [
+            (entry_point, distance_to_entry)
+        ]  # Max heap for results (farthest first)
 
         # Get furthest distance in result set
         def __get_furthest_distance():
@@ -439,7 +449,8 @@ class HNSWIndexer(Indexer):
             candidates.sort(key=lambda x: x[1])  # Sort by distance (closest first)
             curr_node, curr_dist = candidates.pop(0)
 
-            # If current distance is greater than the furthest in our result set, we're done
+            # If current distance is greater than the
+            # furthest in our result set, we're done
             furthest_distance = __get_furthest_distance()
             if curr_dist > furthest_distance and len(nearest) >= ef:
                 break
@@ -493,7 +504,9 @@ class HNSWIndexer(Indexer):
 class HNSWConfig(BaseModel):
     name: str = Field(..., description="Name of the indexer")
     created: str = Field(..., description="Creation timestamp as ISO format string")
-    last_updated: str = Field(..., description="Last updated timestamp as ISO format string")
+    last_updated: str = Field(
+        ..., description="Last updated timestamp as ISO format string"
+    )
     embeddings: dict[str, list[float]] = Field(..., description="Embeddings dictionary")
     graph: dict[int, dict[str, set[str]]] = Field(..., description="Graph structure")
     entry_point: Optional[str] = Field(None, description="Entry point node ID")
@@ -528,7 +541,9 @@ class HNSWConfig(BaseModel):
                     raise ValueError(f"Node ID must be a string, got {type(node_id)}")
 
                 if not isinstance(neighbors, set) and not isinstance(neighbors, list):
-                    raise ValueError(f"Neighbors must be a set or list, got {type(neighbors)}")
+                    raise ValueError(
+                        f"Neighbors must be a set or list, got {type(neighbors)}"
+                    )
 
                 # Convert lists to sets if needed
                 if isinstance(neighbors, list):

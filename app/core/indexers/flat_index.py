@@ -62,7 +62,9 @@ class FlatIndexer(Indexer):
                 self.embeddings[chunk_id] = embedding
                 self.last_updated = datetime.now()
             else:
-                raise ValueError(f"Chunk {chunk_id} not found in the index. Cannot update.")
+                raise ValueError(
+                    f"Chunk {chunk_id} not found in the index. Cannot update."
+                )
 
     def search(
         self,
@@ -131,7 +133,9 @@ class FlatIndexer(Indexer):
             self.embeddings = {k: np.array(v) for k, v in config.embeddings.items()}
 
         except Exception as e:
-            raise ValueError(f"Failed to load Flat indexer from dictionary: {str(e)}") from e
+            raise ValueError(
+                f"Failed to load Flat indexer from dictionary: {str(e)}"
+            ) from e
 
 
 class FlatIndexConfig(BaseModel):

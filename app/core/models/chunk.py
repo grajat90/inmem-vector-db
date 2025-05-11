@@ -18,7 +18,9 @@ class ChunkMetadata(BaseModel):
     description: Optional[str] = Field(
         default=None, description="The description of the chunk"
     )
-    page: Optional[int] = Field(default=None, ge=0, description="The page number of the chunk")
+    page: Optional[int] = Field(
+        default=None, ge=0, description="The page number of the chunk"
+    )
 
     @field_validator("tags")
     @classmethod
@@ -42,7 +44,9 @@ class ChunkMetadata(BaseModel):
 
 class Chunk(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    document_id: str = Field(description="The id of the document that this chunk belongs to")
+    document_id: str = Field(
+        description="The id of the document that this chunk belongs to"
+    )
     text: str = Field(description="The text of the chunk")
     embedding: np.ndarray = Field(description="The embedding of the chunk")
     metadata: ChunkMetadata = Field(description="The metadata of the chunk")

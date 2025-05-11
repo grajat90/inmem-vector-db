@@ -46,4 +46,6 @@ class DeleteLibraryResponse(BaseModel):
     library_id: str = Field(description="The ID of the library")
     chunk_count: int = Field(description="The number of chunks in the library")
     document_count: int = Field(description="The number of documents in the library")
-    message: str = Field(description="A message indicating the success of the operation")
+    message: str = Field(
+        description="A message indicating the success of the operation"
+    )

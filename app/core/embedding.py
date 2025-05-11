@@ -69,7 +69,9 @@ async def get_embeddings(texts: list[str], use_cache: bool = True) -> list[np.nd
         )
 
         # Convert to numpy arrays and update cache
-        for i, (idx, embedding) in enumerate(zip(to_embed_indices, response.embeddings.float)):
+        for i, (idx, embedding) in enumerate(
+            zip(to_embed_indices, response.embeddings.float)
+        ):
             numpy_embedding = np.array(embedding, dtype=np.float32)
             result_embeddings[idx] = numpy_embedding
 

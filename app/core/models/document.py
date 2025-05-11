@@ -11,8 +11,12 @@ class DocumentMetadata(BaseModel):
         default_factory=datetime.now,
         description="The date and time the document was created",
     )
-    tags: list[str] = Field(default_factory=list, description="The tags of the document")
-    author: Optional[str] = Field(default=None, description="The author of the document")
+    tags: list[str] = Field(
+        default_factory=list, description="The tags of the document"
+    )
+    author: Optional[str] = Field(
+        default=None, description="The author of the document"
+    )
     title: Optional[str] = Field(default=None, description="The title of the document")
     description: Optional[str] = Field(
         default=None, description="The description of the document"

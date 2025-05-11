@@ -23,7 +23,9 @@ def register_exception_handlers(app: FastAPI) -> None:
 
     # Add handlers for validation errors, unexpected errors, etc.
     @app.exception_handler(Exception)
-    async def handle_unhandled_exception(request: Request, exc: Exception) -> JSONResponse:
+    async def handle_unhandled_exception(
+        request: Request, exc: Exception
+    ) -> JSONResponse:
         # Log the exception here
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

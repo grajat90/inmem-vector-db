@@ -30,9 +30,9 @@ def create_library_with_indexer(client: TestClient, indexer_type: str) -> Respon
             "metadata": {"source": "string", "tags": ["test"]},
             "chunks": [
                 {"text": chunk, "metadata": {"source": "string", "tags": ["test"]}}
-                for chunk in test_chunks_df[test_chunks_df["document_name"] == document_name][
-                    "chunk"
-                ].tolist()
+                for chunk in test_chunks_df[
+                    test_chunks_df["document_name"] == document_name
+                ]["chunk"].tolist()
             ],
         }
         for document_name in document_names
@@ -157,7 +157,9 @@ def test_search_library():
         "include_metadata": False,
         "include_embeddings": False,
     }
-    search_response = client.post(f"/libraries/{library_id}/search", json=search_request)
+    search_response = client.post(
+        f"/libraries/{library_id}/search", json=search_request
+    )
     assert search_response.status_code == status.HTTP_200_OK
     # Assert that the response contains the expected fields
     assert "query" in search_response.json()
@@ -202,7 +204,9 @@ def test_search_with_lsh_indexer():
         "include_embeddings": False,
     }
 
-    search_response = client.post(f"/libraries/{library_id}/search", json=search_request)
+    search_response = client.post(
+        f"/libraries/{library_id}/search", json=search_request
+    )
     assert search_response.status_code == status.HTTP_200_OK
 
     # Assert that the response contains the expected fields
@@ -464,7 +468,9 @@ def test_update_document():
     assert response.status_code == status.HTTP_200_OK
 
     # Verify the update
-    get_updated_response = client.get(f"/libraries/{library_id}/documents/{document_id}")
+    get_updated_response = client.get(
+        f"/libraries/{library_id}/documents/{document_id}"
+    )
     assert get_updated_response.status_code == status.HTTP_200_OK
     assert get_updated_response.json()["title"] == update_request["title"]
     assert get_updated_response.json()["description"] == update_request["description"]
@@ -538,7 +544,9 @@ def test_delete_document():
         "metadata": {"source": "test_delete", "tags": ["delete"]},
     }
 
-    create_response = client.post(f"/libraries/{library_id}/documents", json=document_request)
+    create_response = client.post(
+        f"/libraries/{library_id}/documents", json=document_request
+    )
     assert create_response.status_code == status.HTTP_200_OK
     document_id = create_response.json()["document_id"]
 
@@ -562,7 +570,9 @@ def test_delete_document():
         "metadata": {"source": "test_delete", "tags": ["delete", "lsh"]},
     }
 
-    create_response = client.post(f"/libraries/{library_id}/documents", json=document_request)
+    create_response = client.post(
+        f"/libraries/{library_id}/documents", json=document_request
+    )
     assert create_response.status_code == status.HTTP_200_OK
     document_id = create_response.json()["document_id"]
 
@@ -680,7 +690,9 @@ def test_search_performance():
                 "include_embeddings": False,
             }
 
-            response = client.post(f"/libraries/{library_id}/search", json=search_request)
+            response = client.post(
+                f"/libraries/{library_id}/search", json=search_request
+            )
             assert response.status_code == status.HTTP_200_OK
             results = response.json()["results"]
 

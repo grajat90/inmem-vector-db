@@ -51,7 +51,9 @@ class Library(BaseModel):
     # Thread safety lock for concurrent operations
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        data_dir = os.path.join(os.path.dirname(__file__), "../../..", config.data_directory)
+        data_dir = os.path.join(
+            os.path.dirname(__file__), "../../..", config.data_directory
+        )
         os.makedirs(data_dir, exist_ok=True)
         self._save_path = os.path.join(data_dir, f"{self.name}.pkl")
         self._lock = Lock()

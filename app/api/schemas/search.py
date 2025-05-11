@@ -47,8 +47,12 @@ class ChunkSearchResult(BaseModel):
     id: str = Field(description="Chunk ID")
     document_id: str = Field(description="Document ID the chunk belongs to")
     text: str = Field(description="Text content of the chunk")
-    score: float = Field(description="Similarity score (lower is better for distance metrics)")
-    metadata: Optional[Dict[str, Any]] = Field(default=None, description="Chunk metadata")
+    score: float = Field(
+        description="Similarity score (lower is better for distance metrics)"
+    )
+    metadata: Optional[Dict[str, Any]] = Field(
+        default=None, description="Chunk metadata"
+    )
     embedding: Optional[List[float]] = Field(
         default=None, description="Chunk embedding vector"
     )

@@ -19,14 +19,18 @@ class CreateChunkResponse(BaseModel):
     chunk_id: str = Field(description="The ID of the chunk")
     document_id: str = Field(description="ID of the document this chunk belongs to")
     library_id: str = Field(description="ID of the library this chunk belongs to")
-    message: str = Field(description="A message indicating the success of the operation")
+    message: str = Field(
+        description="A message indicating the success of the operation"
+    )
 
 
 class CreateChunkBatchResponse(BaseModel):
     library_id: str = Field(description="ID of the library this chunk belongs to")
     added_chunks: list[str] = Field(description="A list of chunk IDs that were added")
     count: int = Field(description="The number of chunks added")
-    message: str = Field(description="A message indicating the success of the operation")
+    message: str = Field(
+        description="A message indicating the success of the operation"
+    )
 
 
 class BasicChunkDetails(BaseModel):
@@ -41,4 +45,6 @@ class BasicChunkDetails(BaseModel):
 class DeleteChunkResponse(BaseModel):
     library_id: str = Field(description="ID of the library this chunk belongs to")
     chunk_id: str = Field(description="ID of the chunk to delete")
-    message: str = Field(description="A message indicating the success of the operation")
+    message: str = Field(
+        description="A message indicating the success of the operation"
+    )

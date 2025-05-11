@@ -37,7 +37,9 @@ class ChunkService:
 
         self.background_tasks = background_tasks
 
-    async def add_chunk(self, chunk_request: CreateChunkRequest) -> tuple[Chunk, Library]:
+    async def add_chunk(
+        self, chunk_request: CreateChunkRequest
+    ) -> tuple[Chunk, Library]:
         if not self.library:
             raise LibraryNotFoundException(self.library_id)
 
@@ -48,7 +50,9 @@ class ChunkService:
         embedding: list[float] = await get_embedding(chunk_request.text)
 
         # Create chunk with metadata
-        chunk_metadata: ChunkMetadata = chunk_request.metadata or ChunkMetadata(source="api")
+        chunk_metadata: ChunkMetadata = chunk_request.metadata or ChunkMetadata(
+            source="api"
+        )
         chunk = Chunk(
             text=chunk_request.text,
             embedding=embedding,
@@ -79,7 +83,9 @@ class ChunkService:
                 raise DocumentNotFoundException(document_id)
 
         # Collect all chunk texts for batch embedding
-        chunk_texts: list[str] = [chunk_request.text for chunk_request in chunk_requests]
+        chunk_texts: list[str] = [
+            chunk_request.text for chunk_request in chunk_requests
+        ]
 
         # Get embeddings in batch
         embeddings: list[list[float]] = await get_embeddings(chunk_texts)
@@ -134,7 +140,9 @@ class ChunkService:
 
         return self.library.chunks[chunk_id]
 
-    async def update_chunk(self, chunk_id: str, chunk_request: CreateChunkRequest) -> Chunk:
+    async def update_chunk(
+        self, chunk_id: str, chunk_request: CreateChunkRequest
+    ) -> Chunk:
         if self.library is None:
             raise LibraryNotFoundException(self.library_id)
 

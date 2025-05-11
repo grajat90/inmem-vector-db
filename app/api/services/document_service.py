@@ -43,7 +43,9 @@ class DocumentService:
         # Process chunks if provided
         if document_request.chunks:
             # Collect all chunk texts for batch embedding
-            chunk_texts = [chunk_request.text for chunk_request in document_request.chunks]
+            chunk_texts = [
+                chunk_request.text for chunk_request in document_request.chunks
+            ]
             chunk_metadatas = [
                 chunk_request.metadata or ChunkMetadata(source="api")
                 for chunk_request in document_request.chunks
@@ -53,7 +55,9 @@ class DocumentService:
             embeddings = await get_embeddings(chunk_texts)
 
             # Create and add each chunk
-            for text, embedding, metadata in zip(chunk_texts, embeddings, chunk_metadatas):
+            for text, embedding, metadata in zip(
+                chunk_texts, embeddings, chunk_metadatas
+            ):
                 chunk = Chunk(
                     text=text,
                     embedding=embedding,

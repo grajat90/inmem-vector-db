@@ -49,7 +49,8 @@ class LSHIndexer(Indexer):
         # Initialize hash tables and their hyperplanes
         # Hash table structure: {hash_value: set[chunk_id]}
         self._hash_tables: list[dict[str, set[str]]] = [{} for _ in range(num_tables)]
-        # Hyperplanes structure: list[hash_function: list[hyperplane_norm_vector: np.ndarray]]
+        # Hyperplanes structure:
+        # list[hash_function: list[hyperplane_norm_vector: np.ndarray]]
         self._hyperplanes: Optional[list[list[np.ndarray]]] = None
 
         # Dimensionality of embeddings (set when first vector is added)
@@ -66,7 +67,11 @@ class LSHIndexer(Indexer):
             self.embeddings: dict[str, np.ndarray] = {}
 
             # Set the dimensionality if chunks are provided
-            if chunks and hasattr(chunks[0], "embedding") and chunks[0].embedding is not None:
+            if (
+                chunks
+                and hasattr(chunks[0], "embedding")
+                and chunks[0].embedding is not None
+            ):
                 self._dim = len(chunks[0].embedding)
                 self._initialize_hyperplanes()
 
@@ -119,7 +124,9 @@ class LSHIndexer(Indexer):
                 return self.delete(chunk_id, _skip_lock=True)
 
         if chunk_id not in self.embeddings:
-            warnings.warn(f"Chunk {chunk_id} not found in the index. Skipping.", UserWarning)
+            warnings.warn(
+                f"Chunk {chunk_id} not found in the index. Skipping.", UserWarning
+            )
             return
 
         embedding = self.embeddings[chunk_id]
@@ -149,7 +156,9 @@ class LSHIndexer(Indexer):
             if chunk_id in self.embeddings:
                 self.delete(chunk_id, _skip_lock=True)
             else:
-                raise ValueError(f"Chunk {chunk_id} not found in the index. Cannot update.")
+                raise ValueError(
+                    f"Chunk {chunk_id} not found in the index. Cannot update."
+                )
 
             # Then add it with the new embedding
             self.add(chunk_id, embedding, _skip_lock=True)
@@ -290,11 +299,15 @@ class LSHIndexer(Indexer):
             if config.hyperplanes:
                 self._hyperplanes = []
                 for table_planes in config.hyperplanes:
-                    planes = [np.array(plane, dtype=np.float32) for plane in table_planes]
+                    planes = [
+                        np.array(plane, dtype=np.float32) for plane in table_planes
+                    ]
                     self._hyperplanes.append(planes)
 
         except Exception as e:
-            raise ValueError(f"Failed to load LSH indexer from dictionary: {str(e)}") from e
+            raise ValueError(
+                f"Failed to load LSH indexer from dictionary: {str(e)}"
+            ) from e
 
     def _initialize_hyperplanes(self):
         """Initialize random hyperplanes for hashing"""
@@ -366,7 +379,9 @@ class LSHIndexer(Indexer):
 class LSHConfig(BaseModel):
     name: str = Field(..., description="Name of the indexer")
     created: str = Field(..., description="Creation timestamp as ISO format string")
-    last_updated: str = Field(..., description="Last updated timestamp as ISO format string")
+    last_updated: str = Field(
+        ..., description="Last updated timestamp as ISO format string"
+    )
     embeddings: Dict[str, List[float]] = Field(..., description="Embeddings dictionary")
     hash_size: int = Field(..., description="Size of each hash")
     num_tables: int = Field(..., description="Number of hash tables")

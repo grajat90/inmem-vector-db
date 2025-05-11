@@ -38,4 +38,6 @@ class DocumentResponse(BaseModel):
 class DeleteDocumentResponse(BaseModel):
     document_id: str = Field(description="The ID of the document")
     library_id: str = Field(description="The ID of the library the document belongs to")
-    message: str = Field(description="A message indicating the success of the operation")
+    message: str = Field(
+        description="A message indicating the success of the operation"
+    )

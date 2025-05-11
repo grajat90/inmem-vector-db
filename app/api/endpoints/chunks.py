@@ -41,7 +41,9 @@ async def add_chunks_batch(
     libraries: get_libraries_dependency,
 ) -> CreateChunkBatchResponse:
     """Add multiple chunks to a library in a single batch operation"""
-    chunk_service = ChunkService(libraries, library_id, background_tasks=background_tasks)
+    chunk_service = ChunkService(
+        libraries, library_id, background_tasks=background_tasks
+    )
     chunks, library = await chunk_service.add_chunks_batch(chunk_requests)
 
     return CreateChunkBatchResponse(

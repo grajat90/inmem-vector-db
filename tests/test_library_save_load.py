@@ -129,7 +129,9 @@ def test_save_load_flat_indexer(create_test_library, temp_dir):
 
     # Verify the indexer was loaded correctly
     assert type(loaded_library.indexer) is type(original_library.indexer)
-    assert len(loaded_library.indexer.embeddings) == len(original_library.indexer.embeddings)
+    assert len(loaded_library.indexer.embeddings) == len(
+        original_library.indexer.embeddings
+    )
 
     # Test search functionality on the loaded library
     # Get a random chunk from the library to use as a query
@@ -178,7 +180,9 @@ def test_save_load_hnsw_indexer(create_test_library, temp_dir):
 
     # Verify the indexer was loaded correctly
     assert type(loaded_library.indexer) is type(original_library.indexer)
-    assert len(loaded_library.indexer.embeddings) == len(original_library.indexer.embeddings)
+    assert len(loaded_library.indexer.embeddings) == len(
+        original_library.indexer.embeddings
+    )
 
     # Verify graph structure properties are maintained
     assert loaded_library.indexer._m == original_library.indexer._m
@@ -232,7 +236,9 @@ def test_save_load_lsh_indexer(create_test_library, temp_dir):
 
     # Verify the indexer was loaded correctly
     assert type(loaded_library.indexer) is type(original_library.indexer)
-    assert len(loaded_library.indexer.embeddings) == len(original_library.indexer.embeddings)
+    assert len(loaded_library.indexer.embeddings) == len(
+        original_library.indexer.embeddings
+    )
 
     # Verify LSH-specific properties are maintained
     assert loaded_library.indexer._hash_size == original_library.indexer._hash_size
@@ -296,7 +302,9 @@ def test_cross_library_search(create_test_library):
             (hnsw_library, "hnsw"),
             (lsh_library, "lsh"),
         ]:
-            results = library.indexer.search(query_embedding, k=3, distance_metric=metric)
+            results = library.indexer.search(
+                query_embedding, k=3, distance_metric=metric
+            )
 
             # Verify we get results with each metric
             assert len(results) > 0, f"No results for {name} with {metric} metric"
@@ -377,7 +385,9 @@ def test_corrupt_file_handling(temp_dir):
 def test_indexer_persistence(create_test_library, temp_dir, indexer_type):
     """Test that all types of indexers persist correctly"""
     # Create a test library with the specified indexer
-    library = create_test_library(f"Test_{indexer_type.upper()}_Persistence", indexer_type)
+    library = create_test_library(
+        f"Test_{indexer_type.upper()}_Persistence", indexer_type
+    )
 
     # Define a save path
     save_path = os.path.join(temp_dir, f"test_{indexer_type}_persistence.pkl")
@@ -435,13 +445,15 @@ def test_lsh_multi_probe_functionality():
     assert hash_value in probe_hashes_1
     assert hash_value in probe_hashes_2
 
-    # For 1 probe, we should get 1 + 4 = 5 hashes (original + flipping each of the 4 bits)
+    # For 1 probe, we should get 1 + 4 = 5 hashes
+    # (original + flipping each of the 4 bits)
     assert len(probe_hashes_1) == 5
 
     # For 2 probes, we should get more hashes (original + flipping different bits)
     assert len(probe_hashes_2) > len(probe_hashes_1)
 
-    # Each hash in the probes should differ from the original by at most the number of probes
+    # Each hash in the probes should differ from the
+    # original by at most the number of probes
     for p_hash in probe_hashes_1:
         if p_hash != hash_value:
             # Count bit differences
